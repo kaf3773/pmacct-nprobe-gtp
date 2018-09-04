@@ -74,7 +74,7 @@ if(opt_outdir == ""):
     outfile = sys.stdout
 else:
     try:
-        fname = opt_outdir+"/"+str(epoch)+".imsi"
+        fname = opt_outdir+"/"+str(epoch)+".csv"
         outfile = open(fname, "w")
         print("Dumping data to "+fname+"...")
     except Exception, err:
@@ -96,16 +96,22 @@ if(verbose):
 
 keys = r.keys(str(epoch)+".*")
 
-outfile.write("#\n")
-outfile.write("# Timestamp\tIMSI\tGranularity\tProtocol\tPackets\tBytes\tFlows\tDuration\n")
-outfile.write("#\n")
+#outfile.write("#\n")
+outfile.write("Timestamp,IMSI,Granularity,Protocol,Packets,Bytes,Flows,Duration\n")
+#outfile.write("#\n")
 
 for k in keys:
     try:
         elems = r.hgetall(k)
         key_elems = k.split('.')
-        #outfile.write(str(epoch)+"\t"+key_elems[1]+"\t"+str(aggregation_duration)+"\t"+key_elems[2]+"\t"+str(elems["packets"])+"\t"+str(elems["bytes"])+"\t"+str(elems["flows"])+"\t"+str(elems["duration"])+"\n")
-        outfile.write(str(epoch)+"\t"+key_elems[1]+"\t"+str(aggregation_duration)+"\t"+key_elems[2]+"\t"+str(elems.get("packets", 0))+"\t"+str(elems.get("bytes", 0))+"\t"+str(elems.get("flows",0))+"\t"+str(elems.get("duration", 0))+"\n")
+        key_count = len(key_elems)
+        #print key_count
+        if key_count == 4:
+              outfile.write(str(epoch)+","+key_elems[1]+","+str(aggregation_duration)+","+key_elems[2]+"."+key_elems[3]+","+str(elems["packets"])+","+str(elems["bytes"])+","+str(elems["flows"])+","+str(elems["duration"])+"\n")
+        elif key_count == 3:
+              outfile.write(str(epoch)+","+key_elems[1]+","+str(aggregation_duration)+","+key_elems[2]+","+str(elems.get("packets", 0))+","+str(elems.get("bytes", 0))+","+str(elems.get("flows",0))+","+str(elems.get("duration", 0))+"\n")
+        else:
+              good = "I am good"
         r.delete(k)
     except Exception, err:
         print "Error processing key "+str(key)
